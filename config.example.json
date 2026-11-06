@@ -1,0 +1,27 @@
+{
+  "activeServerId": "srv-example",
+  "servers": [
+    {
+      "id": "srv-example",
+      "name": "Example Server",
+      "host": "203.0.113.10",
+      "port": 22,
+      "username": "root",
+      "password": "replace-with-ssh-password",
+      "privateKey": "",
+      "hostKeyFingerprint": "",
+      "createdAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "alerts": {
+    "enabled": false,
+    "discordWebhookUrl": "",
+    "telegramBotToken": "",
+    "telegramChatId": "",
+    "cpuThreshold": 85,
+    "ramThreshold": 90,
+    "diskThreshold": 90,
+    "pm2Alerts": true
+  },
+  "geminiApiKey": ""
+}

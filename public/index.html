@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="ltr">
+
+
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ServerOps</title>
+
+  <meta name="color-scheme" content="light">
+
+  <link rel="icon" href="data:,">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <link rel="stylesheet" href="css/dashboard.css">
+
+  
+
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.29.2/dist/feather.min.js"></script>
+
+  
+
+  
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.min.js"></script>
+
+
+
+  
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+
+  <link rel="stylesheet" href="css/operations.css">
+
+</head>
+
+
+
+<body>
+
+
+
+  
+
+  <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true">
+
+    <defs>
+
+      <linearGradient id="mintGaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+
+        <stop offset="0%" stop-color="#14b8a6" />
+
+        <stop offset="100%" stop-color="#0f766e" />
+
+      </linearGradient>
+
+    </defs>
+
+  </svg>
+
+
+
+  <div class="app-container">
+
+
+
+    
+
+    <header class="top-nav">
+
+      <div class="top-left-stats">
+
+        <button class="icon-btn-pill" id="btnPowerReset" title="Server Quick Actions">
+
+          <i data-feather="power"></i>
+
+        </button>
+
+        <div class="stat-pill">
+
+          <i data-feather="clock"></i>
+
+          <span id="headerUptime">Loading...</span>
+
+        </div>
+
+        <div class="stat-pill clickable" id="btnServerDropdown" title="Click to switch or manage servers">
+
+          <i data-feather="server"></i>
+
+          <span id="headerIpMasked">2.57.*.*</span>
+
+          <span class="server-dot-status"></span>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+
+    
+
+    
+
+    
+
+    <main id="view-dashboard" class="view-section active" aria-labelledby="dashGreeting">
+
+
+
+      
+
+      <section class="dash-hero">
+
+        <div class="dash-hero-main">
+
+          <div class="dash-hero-eyebrow">
+
+            <span class="dash-live-pill" id="dashModePill" data-mode="loading">
+
+              <span class="dash-live-dot"></span><span id="dashModeText">Connecting…</span>
+
+            </span>
+
+            <span class="dash-hero-meta" id="dashLastSeen">—</span>
+
+          </div>
+
+          <h1 class="dash-hero-title" id="dashGreeting">Server overview</h1>
+
+          <p class="dash-hero-sub">
+
+            <span id="dashServerName">—</span>
+
+            <span class="dash-sep">•</span>
+
+            <span class="dash-mono" id="dashServerHost">—</span>
+
+            <span class="dash-sep">•</span>
+
+            <span id="dashCpuModel">—</span>
+
+          </p>
+
+          <p class="dash-hero-error" id="dashConnectError" hidden></p>
+
+        </div>
+
+
+
+        <div class="dash-quick-actions" role="group" aria-label="Quick actions">
+
+          <button type="button" class="dash-qa" data-goto="terminal"><i data-feather="terminal"></i><span>Terminal</span></button>
+
+          <button type="button" class="dash-qa" data-goto="files"><i data-feather="folder"></i><span>Files</span></button>
+
+          <button type="button" class="dash-qa" data-goto="copilot"><i data-feather="message-circle"></i><span>Agent</span></button>
+
+          <button type="button" class="dash-qa dash-qa-primary" id="btnRefreshMetrics" title="Refresh live data">
+
+            <i data-feather="refresh-cw"></i><span>Refresh</span>
+
+          </button>
+
+        </div>
+
+      </section>
+
+
+
+      
+
+      <section class="dash-kpis" aria-label="Live resource usage">
+
+        <article class="dash-kpi" data-kpi="cpu">
+
+          <header class="dash-kpi-head">
+
+            <span class="dash-kpi-icon"><i data-feather="cpu"></i></span>
+
+            <span class="dash-kpi-label">CPU</span>
+
+          </header>
+
+          <div class="dash-kpi-value"><span id="txtCpuVal">--</span><small>%</small></div>
+
+          <div class="dash-meter"><span class="dash-meter-fill" id="kpiCpuBar"></span></div>
+
+          <div class="dash-kpi-foot">
+
+            <span id="txtCpuSub">Load --</span>
+
+            <svg class="dash-spark" id="sparkCpu" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+          </div>
+
+        </article>
+
+
+
+        <article class="dash-kpi" data-kpi="ram">
+
+          <header class="dash-kpi-head">
+
+            <span class="dash-kpi-icon"><i data-feather="layers"></i></span>
+
+            <span class="dash-kpi-label">Memory</span>
+
+          </header>
+
+          <div class="dash-kpi-value"><span id="txtRamVal">--</span><small>%</small></div>
+
+          <div class="dash-meter"><span class="dash-meter-fill" id="kpiRamBar"></span></div>
+
+          <div class="dash-kpi-foot">
+
+            <span id="txtRamSub">-- / -- GB</span>
+
+            <svg class="dash-spark" id="sparkRam" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+          </div>
+
+        </article>
+
+
+
+        <article class="dash-kpi" data-kpi="disk">
+
+          <header class="dash-kpi-head">
+
+            <span class="dash-kpi-icon"><i data-feather="hard-drive"></i></span>
+
+            <span class="dash-kpi-label">Disk</span>
+
+          </header>
+
+          <div class="dash-kpi-value"><span id="txtDiskVal">--</span><small>%</small></div>
+
+          <div class="dash-meter"><span class="dash-meter-fill" id="kpiDiskBar"></span></div>
+
+          <div class="dash-kpi-foot">
+
+            <span id="txtDiskSub">-- GB free</span>
+
+            <svg class="dash-spark" id="sparkDisk" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+          </div>
+
+        </article>
+
+
+
+        <article class="dash-kpi" data-kpi="net">
+
+          <header class="dash-kpi-head">
+
+            <span class="dash-kpi-icon"><i data-feather="activity"></i></span>
+
+            <span class="dash-kpi-label">Network</span>
+
+          </header>
+
+          <div class="dash-kpi-net">
+
+            <div><i data-feather="arrow-down"></i><strong id="valRxRate">--</strong></div>
+
+            <div><i data-feather="arrow-up"></i><strong id="valTxRate">--</strong></div>
+
+          </div>
+
+          <div class="dash-kpi-foot">
+
+            <span>Cache <strong id="valCacheMb">--</strong></span>
+
+            <svg class="dash-spark" id="sparkNet" viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+          </div>
+
+        </article>
+
+      </section>
+
+
+
+      <div class="dash-grid">
+
+        
+
+        <section class="card-panel dash-chart-card">
+
+          <div class="dash-card-head">
+
+            <div>
+
+              <h2 class="dash-card-title">Resource history</h2>
+
+              <p class="dash-card-sub" id="historySummary">Collecting samples…</p>
+
+            </div>
+
+            <div class="dash-range" role="tablist" aria-label="History range">
+
+              <button type="button" role="tab" data-range="15m">15m</button>
+
+              <button type="button" role="tab" data-range="1h" class="active" aria-selected="true">1h</button>
+
+              <button type="button" role="tab" data-range="6h">6h</button>
+
+              <button type="button" role="tab" data-range="24h">24h</button>
+
+            </div>
+
+          </div>
+
+          <div class="dash-legend">
+
+            <span class="dash-legend-item" data-series="cpu"><i></i>CPU</span>
+
+            <span class="dash-legend-item" data-series="ram"><i></i>Memory</span>
+
+            <span class="dash-legend-item" data-series="disk"><i></i>Disk</span>
+
+          </div>
+
+          <div class="dash-chart-wrap" id="historyChartWrap">
+
+            <svg class="dash-chart" id="historyChart" role="img" aria-label="CPU, memory and disk usage over time"></svg>
+
+            <div class="dash-chart-tip" id="historyTip" hidden></div>
+
+            <p class="dash-chart-empty" id="historyEmpty" hidden>No samples yet. The panel records one every 15 seconds while it is open, and every minute in the background.</p>
+
+          </div>
+
+        </section>
+
+
+
+        
+
+        <section class="card-panel dash-health-card">
+
+          <div class="dash-card-head">
+
+            <h2 class="dash-card-title">System health</h2>
+
+            <span class="badge-pill-mint" id="pulseOptimalBadge">--</span>
+
+          </div>
+
+          <div class="dash-gauge">
+
+            <svg class="pulse-svg" viewBox="0 0 120 120" aria-hidden="true">
+
+              <circle class="pulse-bg-ring" cx="60" cy="60" r="50"></circle>
+
+              <circle class="pulse-progress-ring" id="pulseRingProgress" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+
+            </svg>
+
+            <div class="pulse-inner-content">
+
+              <span class="pulse-percentage" id="pulseHealthPercent">--<span>%</span></span>
+
+              <span class="pulse-tag" id="pulseHealthTag">Waiting for data</span>
+
+            </div>
+
+          </div>
+
+          <ul class="dash-fleet">
+
+            <li><span class="dash-fleet-label"><i data-feather="server"></i>Servers online</span><strong id="fleetServers">--</strong></li>
+
+            <li><span class="dash-fleet-label"><i data-feather="zap"></i>PM2 online</span><strong id="fleetPm2">--</strong></li>
+
+            <li><span class="dash-fleet-label"><i data-feather="bell"></i>Alerts</span><strong id="fleetAlerts">--</strong></li>
+
+          </ul>
+
+        </section>
+
+      </div>
+
+
+
+      <div class="dash-grid dash-grid-bottom">
+
+        
+
+        <section class="card-panel">
+
+          <div class="dash-card-head">
+
+            <div>
+
+              <h2 class="dash-card-title">PM2 services</h2>
+
+              <p class="dash-card-sub"><span class="badge-pill-mint" id="activeServicesCount">0 ACTIVE</span></p>
+
+            </div>
+
+            <button class="btn-teal-pill" id="btnRestartAllPm2" type="button">
+
+              <i data-feather="refresh-cw"></i><span>Restart all</span>
+
+            </button>
+
+          </div>
+
+          <div class="pm2-cards-grid dash-pm2-grid" id="pm2DashboardContainer"></div>
+
+        </section>
+
+
+
+        
+
+        <section class="card-panel dash-activity-card">
+
+          <div class="dash-card-head">
+
+            <div>
+
+              <h2 class="dash-card-title">Recent activity</h2>
+
+              <p class="dash-card-sub">Audit log of changes made from this panel</p>
+
+            </div>
+
+          </div>
+
+          <ol class="dash-activity" id="dashActivityList">
+
+            <li class="dash-activity-empty">No activity recorded yet.</li>
+
+          </ol>
+
+        </section>
+
+      </div>
+
+    </main>
+
+
+
+    
+
+    
+
+    
+
+    <section id="view-terminal" class="view-section">
+
+      <div class="ssh-terminal-wrapper">
+
+        <div class="terminal-window">
+
+
+
+          <div class="terminal-titlebar">
+
+            <div class="window-dots-title">
+
+              <div class="window-dots">
+
+                <span class="window-dot red"></span>
+
+                <span class="window-dot yellow"></span>
+
+                <span class="window-dot green"></span>
+
+              </div>
+
+              <span class="terminal-title-text">&gt;_ SSH Live PTY Terminal (xterm.js)</span>
+
+              <span class="badge-term-root" id="termLiveBadge">CONNECTED</span>
+
+            </div>
+
+            <div class="terminal-top-actions">
+
+              <button class="btn-terminal-ctrl" id="btnTermReconnect" title="Reconnect Shell">
+
+                <i data-feather="refresh-cw" style="width: 12px; height: 12px;"></i> Reconnect
+
+              </button>
+
+              <button class="btn-terminal-ctrl" id="btnTermFit" title="Fit Terminal Size">
+
+                <i data-feather="maximize-2" style="width: 12px; height: 12px;"></i> Fit
+
+              </button>
+
+              <button class="btn-terminal-ctrl" id="btnTermClear" title="Clear Screen">
+
+                <i data-feather="trash-2" style="width: 12px; height: 12px;"></i> Clear
+
+              </button>
+
+              <button class="btn-terminal-ctrl" id="btnTermClose" onclick="switchView('dashboard')">
+
+                <i data-feather="x" style="width: 12px; height: 12px;"></i>
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+
+          
+
+          <div id="xtermTerminalMount" style="width: 100%; height: 520px; background: #0b090a; padding: 6px; border-radius: 4px; overflow: hidden;"></div>
+
+
+
+          
+
+          <div class="terminal-quick-presets">
+
+            <button class="preset-chip" data-cmd="btop"><i data-feather="cpu"></i> btop</button>
+
+            <button class="preset-chip" data-cmd="pm2 status"><i data-feather="activity"></i> pm2 status</button>
+
+            <button class="preset-chip" data-cmd="pm2 logs --lines 15"><i data-feather="file-text"></i> pm2 logs</button>
+
+            <button class="preset-chip" data-cmd="free -m"><i data-feather="pie-chart"></i> free -m</button>
+
+            <button class="preset-chip" data-cmd="df -h"><i data-feather="hard-drive"></i> df -h</button>
+
+            <button class="preset-chip" data-cmd="uptime"><i data-feather="clock"></i> uptime</button>
+
+            <button class="preset-chip" data-cmd="docker ps"><i data-feather="layers"></i> docker ps</button>
+
+          </div>
+
+
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    
+
+    
+
+    
+
+    <section id="view-files" class="view-section">
+
+      <div class="files-nav-bar">
+
+        <div class="files-left-nav">
+
+          <button class="btn-back-crumb" onclick="switchView('dashboard')">
+
+            <i data-feather="arrow-left"></i> Dashboard
+
+          </button>
+
+          <div class="files-title-box">
+
+            <div class="files-icon-mark">
+
+              <i data-feather="folder"></i>
+
+            </div>
+
+            <div>
+
+              <div class="files-title-text">Cloud Files & Monaco IDE</div>
+
+              <div class="files-subtitle-node" id="filesSubtitleNode">root@2.57.19.94</div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="files-top-actions">
+
+          
+
+          <input type="file" id="fileUploadInput" style="display:none;" multiple>
+
+          <button class="btn-teal-pill" id="btnUploadTrigger">
+
+            <i data-feather="upload-cloud"></i> Upload Files
+
+          </button>
+
+          <button class="btn-file-create" id="btnNewFile">
+
+            <i data-feather="file-plus"></i> New File
+
+          </button>
+
+          <button class="btn-file-create" id="btnNewFolder">
+
+            <i data-feather="folder-plus"></i> New Folder
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      
+
+      <div class="quick-paths-row">
+
+        <button class="path-jump-pill active" data-path="/root">/root</button>
+
+        <button class="path-jump-pill" data-path="/opt">/opt</button>
+
+        <button class="path-jump-pill" data-path="/var/www">/var/www</button>
+
+        <button class="path-jump-pill" data-path="/etc">/etc</button>
+
+        <button class="path-jump-pill" data-path="/tmp">/tmp</button>
+
+      </div>
+
+
+
+      
+
+      <div class="files-explorer-card" id="filesDropZone">
+
+        <div class="files-filter-bar">
+
+          <div class="file-breadcrumb-current">
+
+            <i data-feather="layers" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+
+            <span id="breadcrumbPath">/ root</span>
+
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px;">
+
+            <div class="files-search-box">
+
+              <i data-feather="search" style="width: 15px; height: 15px; color: var(--text-muted);"></i>
+
+              <input type="text" id="fileSearchInput" placeholder="Search files in current dir...">
+
+            </div>
+
+            <button class="btn-dir-up" id="btnDirUp" title="Go up one directory">
+
+              <i data-feather="arrow-up"></i> Up
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+
+        <table class="files-table">
+
+          <thead>
+
+            <tr>
+
+              <th>NAME</th>
+
+              <th>SIZE</th>
+
+              <th>MODIFIED DATE</th>
+
+              <th style="text-align: right; padding-right: 20px;">ACTIONS</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="filesTableBody">
+
+            
+
+          </tbody>
+
+        </table>
+
+
+
+        <div class="files-footer-bar">
+
+          <span id="filesFooterCount">Loading items...</span>
+
+          <span style="display: flex; align-items: center; gap: 6px;">
+
+            <i data-feather="cloud" style="width: 14px; height: 14px;"></i> Drag & Drop files here to upload via SFTP
+
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    
+
+    
+
+    
+
+    <section id="view-copilot" class="view-section">
+
+      <div class="copilot-container">
+
+
+
+        <div class="copilot-header">
+
+          <div class="copilot-brand-title">
+
+            <div class="brand-logo-icon" style="width: 28px; height: 28px;">
+
+              <i data-feather="cpu" style="width: 16px; height: 16px;"></i>
+
+            </div>
+
+            <div>
+
+              <span style="font-weight: 800;">Panel AI</span>
+
+              <span id="copilotAiStatus" class="badge-pill-mint" style="font-size: 10px; margin-left: 8px; padding: 2px 8px;">Connected</span>
+
+            </div>
+
+          </div>
+
+          <div class="copilot-top-tools">
+
+            <button class="icon-btn-pill" id="btnCopilotKeyModal" title="Gemini API Key Settings" style="width: 32px; height: 32px;">
+
+              <i data-feather="key" style="width: 14px; height: 14px;"></i>
+
+            </button>
+
+            <button class="icon-btn-pill" id="btnCopilotClear" title="Clear Chat History" style="width: 32px; height: 32px;">
+
+              <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="chat-history-scroll" id="copilotChatScroll">
+
+          
+
+          <div class="chat-bubble ai">
+
+            <div class="ai-simple-response">
+
+              مرحباً بك! أنا **Panel AI**، مساعدك السحابي الذكي لإدارة ومراقبة خادمك.
+
+              <br><br>
+
+              يمكنك سؤالي عن تحليل استهلاك السيرفر، شرح أخطاء البوتات، أو طلب تثبيت برمجيات وسأقوم بتجهيز أوامر الإصلاح بنقرة زر واحدة!
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="copilot-input-container">
+
+          <form class="copilot-input-pill" id="copilotForm">
+
+            <span class="mode-badge-pill">&gt;_ DevOps</span>
+
+            <input type="text" class="copilot-text-input" id="copilotInput"
+
+              placeholder="اطلب أي شيء عن الخادم، حل مشاكل PM2، أو تثبيت برامج..." autocomplete="off">
+
+            <button type="submit" class="btn-send-copilot" title="Send Query">
+
+              <i data-feather="arrow-up" style="width: 18px; height: 18px;"></i>
+
+            </button>
+
+          </form>
+
+        </div>
+
+
+
+      </div>
+
+    </section>
+
+
+
+    
+
+    
+
+    
+
+    <section id="view-processes" class="view-section">
+
+      <div class="active-services-section" style="max-width: 1000px; margin: 0 auto;">
+
+        <div class="card-header-row">
+
+          <div>
+
+            <h2 class="card-section-title">
+
+              <span>All Background Services & PM2 Hub</span>
+
+            </h2>
+
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Direct process supervision with zero overhead</p>
+
+          </div>
+
+          <button class="btn-teal-pill" id="btnRestartAllPm2Full">
+
+            <i data-feather="refresh-cw"></i> Restart All
+
+          </button>
+
+        </div>
+
+        <div class="pm2-cards-grid" id="pm2FullListContainer">
+
+          
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    
+
+    
+
+    
+
+    <section id="view-infra" class="view-section">
+
+      <div style="max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+
+        
+
+        
+
+        <div class="card-panel">
+
+          <div class="card-header-row">
+
+            <div>
+
+              <h2 class="card-section-title">
+
+                <i data-feather="layers" style="color: var(--mint-600); margin-right: 8px;"></i>
+
+                <span>Infrastructure & Web Services</span>
+
+              </h2>
+
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Manage Docker Containers, Nginx Sites, and Let's Encrypt SSL Certificates</p>
+
+            </div>
+
+            <button class="btn-teal-pill" id="btnRefreshInfra">
+
+              <i data-feather="refresh-cw"></i> Refresh Status
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+
+        
+
+        <div class="card-panel">
+
+          <div class="card-header-row">
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+
+              <i data-feather="box" style="color: #38bdf8;"></i>
+
+              <h3 style="font-size: 16px; font-weight: 700;">Docker Engine & Containers</h3>
+
+            </div>
+
+            <span class="badge-pill-mint" id="dockerStatusBadge">Checking...</span>
+
+          </div>
+
+          <div id="dockerContainersContainer" style="margin-top: 14px;">
+
+            <p style="color: var(--text-muted); font-size: 13px;">Loading Docker status...</p>
+
+          </div>
+
+        </div>
+
+
+
+        
+
+        <div class="card-panel">
+
+          <div class="card-header-row">
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+
+              <i data-feather="globe" style="color: #10b981;"></i>
+
+              <h3 style="font-size: 16px; font-weight: 700;">Nginx Reverse Proxy & Sites</h3>
+
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+
+              <button class="btn-action-white" id="btnNginxTest"><i data-feather="check-circle"></i> Test Config</button>
+
+              <button class="btn-action-teal" id="btnNginxReload"><i data-feather="repeat"></i> Reload Nginx</button>
+
+            </div>
+
+          </div>
+
+          <div id="nginxSitesContainer" style="margin-top: 14px;">
+
+            <p style="color: var(--text-muted); font-size: 13px;">Loading Nginx configuration...</p>
+
+          </div>
+
+        </div>
+
+
+
+        
+
+        <div class="card-panel">
+
+          <div class="card-header-row">
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+
+              <i data-feather="lock" style="color: #f59e0b;"></i>
+
+              <h3 style="font-size: 16px; font-weight: 700;">Let's Encrypt SSL Manager (Certbot)</h3>
+
+            </div>
+
+            <span class="badge-pill-mint" id="sslStatusBadge">Active</span>
+
+          </div>
+
+          <form id="sslIssueForm" style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px; margin-top: 14px;">
+
+            <input type="text" class="form-control" id="sslDomainInput" placeholder="Domain (e.g. app.yourdomain.com)" required>
+
+            <input type="email" class="form-control" id="sslEmailInput" placeholder="Admin Email (e.g. admin@mail.com)">
+
+            <button type="submit" class="btn-teal-pill" style="justify-content: center;">
+
+              <i data-feather="shield"></i> Issue SSL
+
+            </button>
+
+          </form>
+
+          <div id="sslOutputLog" style="margin-top: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);"></div>
+
+        </div>
+
+
+
+      </div>
+
+    </section>
+
+
+
+    
+
+    
+
+    
+
+    <section id="view-settings" class="view-section">
+
+      <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+
+        
+
+        
+
+        <div class="card-panel">
+
+          <div class="card-header-row">
+
+            <h2 class="card-section-title">
+
+              <span>Multi-Server Connections</span>
+
+            </h2>
+
+            <button class="btn-teal-pill" id="btnAddNewServer">
+
+              <i data-feather="plus"></i> Add New Server
+
+            </button>
+
+          </div>
+
+          <div id="serversListContainer" style="display: flex; flex-direction: column; gap: 14px; margin-top: 14px;">
+
+            
+
+          </div>
+
+        </div>
+
+
+
+        
+
+        <div class="card-panel">
+
+          <div class="card-header-row">
+
+            <div>
+
+              <h2 class="card-section-title">
+
+                <i data-feather="bell" style="color: var(--mint-600); margin-right: 6px;"></i>
+
+                <span>Automated Alerts (Discord & Telegram)</span>
+
+              </h2>
+
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Receive instant alerts when PM2 services stop or resources exceed safe limits</p>
+
+            </div>
+
+            <button class="btn-action-white" id="btnTestAlerts">
+
+              <i data-feather="send"></i> Send Test Alert
+
+            </button>
+
+          </div>
+
+
+
+          <form id="alertsConfigForm" style="margin-top: 16px; display: flex; flex-direction: column; gap: 14px;">
+
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+
+              <input type="checkbox" id="chkAlertsEnabled" style="width: 18px; height: 18px; accent-color: var(--mint-600); cursor: pointer;">
+
+              <label for="chkAlertsEnabled" style="font-size: 14px; font-weight: 700; cursor: pointer;">Enable Real-time Background Watchdog</label>
+
+            </div>
+
+
+
+            <div class="form-group">
+
+              <label><i data-feather="message-square" style="width: 14px; height: 14px;"></i> Discord Webhook URL</label>
+
+              <input type="url" class="form-control" id="txtDiscordWebhook" placeholder="https://discord.com/api/webhooks/...">
+
+            </div>
+
+
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+
+              <div class="form-group">
+
+                <label><i data-feather="send" style="width: 14px; height: 14px;"></i> Telegram Bot Token</label>
+
+                <input type="text" class="form-control" id="txtTelegramToken" placeholder="123456789:ABCdefGhI...">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>Telegram Chat ID</label>
+
+                <input type="text" class="form-control" id="txtTelegramChatId" placeholder="-100123456789">
+
+              </div>
+
+            </div>
+
+
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+
+              <div class="form-group">
+
+                <label>CPU Alarm Threshold (%)</label>
+
+                <input type="number" class="form-control" id="numCpuThreshold" min="50" max="99" value="85">
+
+              </div>
+
+              <div class="form-group">
+
+                <label>RAM Alarm Threshold (%)</label>
+
+                <input type="number" class="form-control" id="numRamThreshold" min="50" max="99" value="90">
+
+              </div>
+
+            </div>
+
+
+
+            <button type="submit" class="btn-teal-pill" style="align-self: flex-start;">
+
+              <i data-feather="save"></i> Save Notification Settings
+
+            </button>
+
+          </form>
+
+        </div>
+
+
+
+        
+
+        <div class="card-panel">
+
+          <div class="card-header-row">
+
+            <div>
+
+              <h2 class="card-section-title">
+
+                <i data-feather="cpu" style="color: var(--mint-600); margin-right: 6px;"></i>
+
+                <span>Google Gemini AI Engine</span>
+
+              </h2>
+
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Connect your Gemini API Key for deep log analysis and intelligent 1-click auto-fixing</p>
+
+            </div>
+
+          </div>
+
+          <form id="geminiKeyForm" style="margin-top: 14px; display: flex; gap: 12px;">
+
+            <input type="password" class="form-control" id="txtGeminiKey" placeholder="AIzaSy..." style="flex: 1;">
+
+            <button type="submit" class="btn-teal-pill">
+
+              <i data-feather="key"></i> Save Key
+
+            </button>
+
+          </form>
+
+        </div>
+
+
+
+      </div>
+
+    </section>
+
+
+
+    <section id="view-operations" class="view-section" aria-label="Operations workspace"></section>
+
+
+
+  </div> 
+
+
+
+  
+
+  
+
+  
+
+  <div class="floating-bottom-nav-container">
+
+    <nav class="floating-pill-nav">
+
+      <button class="nav-pill-item active" data-view="dashboard">
+
+        <i data-feather="home"></i>
+
+        <span>Home</span>
+
+      </button>
+
+      <button class="nav-pill-item" data-view="terminal">
+
+        <i data-feather="terminal"></i>
+
+        <span>Terminal</span>
+
+      </button>
+
+      <button class="nav-pill-item" data-view="files">
+
+        <i data-feather="folder"></i>
+
+        <span>Files</span>
+
+      </button>
+
+      <button class="nav-pill-item" data-view="processes">
+
+        <i data-feather="activity"></i>
+
+        <span>Processes</span>
+
+      </button>
+
+      <button class="nav-pill-item" data-view="infra">
+
+        <i data-feather="layers"></i>
+
+        <span>Infra</span>
+
+      </button>
+
+      <button class="nav-pill-item" data-view="copilot">
+
+        <i data-feather="zap"></i>
+
+        <span>Agent</span>
+
+      </button>
+
+      <button class="nav-pill-item" data-view="operations"><i data-feather="git-branch"></i><span>Operations</span></button>
+
+      <button class="nav-pill-item" data-view="settings">
+
+        <i data-feather="sliders"></i>
+
+        <span>Settings</span>
+
+      </button>
+
+    </nav>
+
+  </div>
+
+
+
+  
+
+  
+
+  
+
+  <div class="modal-overlay" id="editorModal">
+
+    <div class="modal-content-card" style="max-width: 900px; width: 95%;">
+
+      <div class="modal-header">
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+
+          <i data-feather="file-text" style="color: var(--mint-600);"></i>
+
+          <h3 id="editorModalTitle">Editing File</h3>
+
+          <span class="badge-pill-mint" id="editorLanguageBadge" style="font-size: 11px; padding: 2px 8px;">Plain Text</span>
+
+        </div>
+
+        <button class="btn-modal-close" onclick="closeEditorModal()">
+
+          <i data-feather="x"></i>
+
+        </button>
+
+      </div>
+
+      <div class="modal-body" style="padding: 0;">
+
+        <div id="monacoEditorHost" style="width: 100%; height: 500px; border-radius: 4px;"></div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button class="btn-dismiss-plan" onclick="closeEditorModal()">Cancel</button>
+
+        <button class="btn-execute-plan" id="btnSaveFileContent">
+
+          <i data-feather="save"></i> Save Changes (Ctrl+S)
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  
+
+  
+
+  
+
+  <div class="modal-overlay" id="logsModal">
+
+    <div class="modal-content-card" style="max-width: 800px; width: 95%;">
+
+      <div class="modal-header">
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+
+          <i data-feather="terminal" style="color: #38bdf8;"></i>
+
+          <h3 id="logsModalTitle">Service Real-time Logs</h3>
+
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+
+          <button class="btn-teal-pill" id="btnAnalyzeLogsAi" style="font-size: 12px; padding: 6px 14px;">
+
+            <i data-feather="zap"></i> Analyze & Fix
+
+          </button>
+
+          <button class="btn-modal-close" onclick="closeLogsModal()">
+
+            <i data-feather="x"></i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="modal-body">
+
+        <pre class="logs-viewer-box" id="logsContentBox">Loading logs...</pre>
+
+        <div id="aiAnalysisBox" style="display: none; margin-top: 14px; padding: 14px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px;"></div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button class="btn-execute-plan" onclick="closeLogsModal()">Done</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  
+
+  
+
+  
+
+  <div class="modal-overlay" id="serverModal">
+
+    <div class="modal-content-card">
+
+      <div class="modal-header">
+
+        <h3>Connect Linux Server (SSH)</h3>
+
+        <button class="btn-modal-close" onclick="closeServerModal()">
+
+          <i data-feather="x"></i>
+
+        </button>
+
+      </div>
+
+      <form id="addServerForm">
+
+        <div class="modal-body">
+
+          <div class="form-group">
+
+            <label>Server Name / Alias</label>
+
+            <input type="text" class="form-control" id="newSrvName" placeholder="e.g. EU Hetzner Discord Bot" required>
+
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+
+            <div class="form-group">
+
+              <label>Host IP / Domain</label>
+
+              <input type="text" class="form-control" id="newSrvHost" placeholder="e.g. 2.57.19.94" required>
+
+            </div>
+
+            <div class="form-group">
+
+              <label>Port</label>
+
+              <input type="number" class="form-control" id="newSrvPort" value="22" required>
+
+            </div>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>Username</label>
+
+            <input type="text" class="form-control" id="newSrvUser" value="root" required>
+
+          </div>
+
+          <div class="form-group">
+
+            <label>SSH Password / Private Key</label>
+
+            <input type="password" class="form-control" id="newSrvPass" placeholder="••••••••••••">
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button type="button" class="btn-dismiss-plan" onclick="closeServerModal()">Cancel</button>
+
+          <button type="submit" class="btn-execute-plan">Save & Connect</button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+
+  
+
+  <div class="toast-container" id="toastContainer"></div>
+
+
+
+  
+
+  <script src="js/app.js"></script>
+
+  <script src="js/dashboard.js"></script>
+
+  <script src="js/operations.js"></script>
+
+</body>
+
+
+
+</html>
+
