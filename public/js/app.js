@@ -142,7 +142,7 @@ function escapeHtml(value) {
 
 
 
-/** معرّف آمن للاستخدام داخل onclick="fn('...')": أي محرف خارج النمط يُحذف. */
+
 
 
 
@@ -162,7 +162,7 @@ function safeId(value) {
 
 
 
-/** أيقونات feather مسموحة فقط بأسماء بسيطة. */
+
 
 
 
@@ -254,7 +254,7 @@ function setPanelToken(token) {
 
 
 
-    /* التخزين معطّل (وضع خاص): نكتفي بالذاكرة */
+    
 
 
 
@@ -710,7 +710,7 @@ function injectAuthStyles() {
 
 
 
-/** نافذة إدخال التوكن: تُرجع Promise ينتهي عند التحقق بنجاح. */
+
 
 
 
@@ -3310,7 +3310,7 @@ async function fetchPm2() {
 
 
 
-/** زر إجراء في بطاقة PM2 مع أيقونة ونص وتسمية وصولية. */
+
 
 
 
@@ -4062,23 +4062,7 @@ function closeLogsModal() {
 
 
 
-/**
 
-
-
- * يبني صندوق نتيجة تحليل Gemini عبر DOM.
-
-
-
- * نص التحليل والأوامر مخرجات نموذج لغوي (غير موثوقة): النص يُعرض كـ textContent،
-
-
-
- * والأوامر تُمرَّر كمصفوفة حقيقية إلى executePlanCommands بدل دمجها في onclick.
-
-
-
- */
 
 
 
@@ -4798,7 +4782,7 @@ async function fetchFiles(targetPath) {
 
 
 
-/** زر أيقونة لعمليات الملفات، مع عنوان وتسمية للقارئات الشاشية. */
+
 
 
 
@@ -6230,7 +6214,7 @@ async function checkGeminiConfig() {
 
 
 
-        elements.copilotAiStatus.textContent = 'Gemini 1.5 Live 🟢';
+        elements.copilotAiStatus.textContent = 'Gemini 1.5 Live ';
 
 
 
@@ -6242,7 +6226,7 @@ async function checkGeminiConfig() {
 
 
 
-        elements.copilotAiStatus.textContent = 'Local Mode 🟡';
+        elements.copilotAiStatus.textContent = 'Local Mode ';
 
 
 
@@ -7330,7 +7314,7 @@ function setupSettingsAndAlerts() {
 
 
 
-          showToast('Gemini API Key saved and activated! 🤖', 'success');
+          showToast('Gemini API Key saved and activated! ', 'success');
 
 
 

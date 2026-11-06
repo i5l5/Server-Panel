@@ -53,7 +53,7 @@ module.exports = function alertsRouter({ store, security, monitor }) {
       next.telegramChatId = chatId;
     }
 
-    // An unchanged masked value means "keep what is stored".
+    
     if (body.discordWebhookUrl !== undefined && !MASKED_PLACEHOLDER_RE.test(String(body.discordWebhookUrl))) {
       const url = String(body.discordWebhookUrl || '').trim();
       if (url && !DISCORD_WEBHOOK_RE.test(url)) {
@@ -77,7 +77,7 @@ module.exports = function alertsRouter({ store, security, monitor }) {
 
   router.post('/alerts/test', async (req, res) => {
     const srv = store.getActiveServer();
-    const title = '🔔 فحص إشعارات لوحة التحكم Panel';
+    const title = ' فحص إشعارات لوحة التحكم Panel';
     const message = `تم إرسال هذا الإشعار التجريبي بنجاح من الخادم: ${srv.name} (${srv.ipMasked}). نظام المراقبة التلقائي يعمل.`;
     const results = await monitor.sendAlert(title, message);
     res.json({ success: true, results });

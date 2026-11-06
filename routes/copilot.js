@@ -18,7 +18,7 @@ async function askGemini(apiKey, prompt) {
   return parts.map(p => p.text || '').join('\n');
 }
 
-/** Pulls runnable lines out of ```bash fenced blocks. */
+
 function extractCommands(text) {
   const commands = [];
   const blocks = String(text).match(/```(?:bash|sh|shell)?\n([\s\S]*?)```/g) || [];
@@ -158,7 +158,7 @@ ${telemetry}
       return res.json({
         success: true,
         replyType: 'text',
-        message: 'أهلاً بك! 👋 أنا Panel AI. اسألني عن أي شيء يخص خادمك (تثبيت برامج، فحص استهلاك، تصحيح أخطاء)، أو أضف مفتاح Gemini API من الإعدادات للذكاء الكامل.'
+        message: 'أهلاً بك!  أنا Panel AI. اسألني عن أي شيء يخص خادمك (تثبيت برامج، فحص استهلاك، تصحيح أخطاء)، أو أضف مفتاح Gemini API من الإعدادات للذكاء الكامل.'
       });
     }
 
@@ -176,7 +176,7 @@ ${telemetry}
     const { serviceName } = req.body || {};
     const srv = store.getActiveServer();
 
-    // A PM2 process name is the only thing allowed here, and it is shell-quoted wherever it is used.
+    
     let name = '';
     try {
       name = security.assertSafeName(serviceName, 'process name');

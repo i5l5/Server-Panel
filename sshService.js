@@ -27,7 +27,7 @@ class SSHService {
   async connect(serverConfig) {
     const id = serverConfig.id || `${serverConfig.host}:${serverConfig.port || 22}`;
 
-    // If already connected and active
+    
     const existing = this.connections.get(id);
     if (existing && existing.isConnected && existing.client) {
       return existing;
@@ -52,8 +52,8 @@ class SSHService {
         username: serverConfig.username || 'root',
         readyTimeout: 15000,
         keepaliveInterval: 10000,
-        // Trust on first use: the fingerprint is pinned, and a changed host key
-        // (possible man-in-the-middle) refuses to send the password.
+        
+        
         hostVerifier: (key) => {
           const fingerprint = `SHA256:${crypto.createHash('sha256').update(key).digest('base64').replace(/=+$/, '')}`;
           if (!serverConfig.hostKeyFingerprint) {
@@ -74,7 +74,7 @@ class SSHService {
       }
 
       client.on('ready', () => {
-        // Open SFTP session
+        
         client.sftp((sftpErr, sftp) => {
           const connObj = {
             id,
@@ -121,9 +121,7 @@ class SSHService {
     });
   }
 
-  /**
-   * Execute a single command and return stdout & stderr
-   */
+  
   async execCommand(serverConfig, command, { timeoutMs = EXEC_TIMEOUT_MS, input } = {}) {
     if (typeof command !== 'string' || !command.trim()) {
       const err = new Error('Command must be a non-empty string');
@@ -155,7 +153,7 @@ class SSHService {
         };
 
         const timer = setTimeout(() => {
-          try { stream.close(); } catch (_) { /* القناة مغلقة أصلاً */ }
+          try { stream.close(); } catch (_) {  }
           finish(null, new Error(`Command timed out after ${timeoutMs / 1000}s`));
         }, timeoutMs);
         if (timer.unref) timer.unref();
@@ -169,9 +167,7 @@ class SSHService {
     });
   }
 
-  /**
-   * Open interactive PTY shell (for terminal / WebSocket streaming)
-   */
+  
   async openShell(serverConfig, ws, dimensions = { rows: 30, cols: 100 }) {
     const conn = await this.connect(serverConfig);
     return new Promise((resolve, reject) => {
@@ -184,11 +180,11 @@ class SSHService {
 
         conn.ptyStream = stream;
 
-        // Pipe raw stream to client WebSocket
+        
         stream.on('data', (data) => {
           if (ws && ws.readyState === 1) {
             const str = data.toString('utf8');
-            // Send both for backward compatibility and raw xterm.js
+            
             ws.send(JSON.stringify({
               type: 'pty_data',
               data: str,
@@ -211,13 +207,8 @@ class SSHService {
     });
   }
 
-  /**
-   * Get real server metrics via remote bash commands
-   */
-  /**
-   * Live metrics with a short cache: the dashboard poll, the WebSocket pulse and
-   * the monitor all ask at once, and they share one SSH round trip.
-   */
+  
+  
   async getLiveMetrics(serverConfig) {
     const id = serverConfig.id || serverConfig.host;
     const cached = this.metricsCache.get(id);
@@ -306,7 +297,7 @@ class SSHService {
     throw new Error('Could not parse server metrics output');
   }
 
-  /** Converts cumulative /proc/net/dev counters into TX KB/s and RX MB/s. */
+  
   networkRates(id, rxBytes, txBytes, now = Date.now()) {
     const prev = this.netCounters.get(id);
     this.netCounters.set(id, { rxBytes, txBytes, at: now });
@@ -319,9 +310,7 @@ class SSHService {
     };
   }
 
-  /**
-   * Get real PM2 processes list from remote server
-   */
+  
   async getPm2List(serverConfig) {
     try {
       const res = await this.execCommand(serverConfig, 'pm2 jlist 2>/dev/null || echo "[]"');
@@ -366,9 +355,7 @@ class SSHService {
     return [];
   }
 
-  /**
-   * Real SFTP: List directory
-   */
+  
   async listFiles(serverConfig, remotePath) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available on server');
@@ -389,7 +376,7 @@ class SSHService {
           };
         });
 
-        // Sort folders first, then alphabetically
+        
         items.sort((a, b) => {
           if (a.type === b.type) return a.name.localeCompare(b.name);
           return a.type === 'dir' ? -1 : 1;
@@ -400,14 +387,12 @@ class SSHService {
     });
   }
 
-  /**
-   * Real SFTP: Read file content
-   */
+  
   async readFile(serverConfig, remoteFilePath) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available');
 
-    // The editor loads the whole file into memory, so huge files are refused up front.
+    
     const size = await new Promise((resolve, reject) => {
       conn.sftp.stat(remoteFilePath, (err, stats) => (err ? reject(err) : resolve(stats.size)));
     });
@@ -424,9 +409,7 @@ class SSHService {
     });
   }
 
-  /**
-   * Real SFTP: Write file content
-   */
+  
   async writeFile(serverConfig, remoteFilePath, content) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available');
@@ -440,9 +423,7 @@ class SSHService {
     });
   }
 
-  /**
-   * Real SFTP: Upload file buffer
-   */
+  
   async uploadFile(serverConfig, remoteFilePath, buffer) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available');
@@ -456,18 +437,14 @@ class SSHService {
     });
   }
 
-  /**
-   * Real SFTP: Get readable stream for downloading
-   */
+  
   async getReadStream(serverConfig, remoteFilePath) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available');
     return conn.sftp.createReadStream(remoteFilePath);
   }
 
-  /**
-   * Real SFTP: Delete file or directory
-   */
+  
   async deleteItem(serverConfig, remotePath) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available');
@@ -477,8 +454,8 @@ class SSHService {
         if (err) return reject(err);
         const isDir = (stats.mode & 0o40000) !== 0;
         if (isDir) {
-          // Use bash rm -rf for robust recursive folder removal
-          // اقتباس POSIX كامل + `--` يمنعان تفسير المسار كأوامر أو كخيارات.
+          
+          
           this.execCommand(serverConfig, `rm -rf -- ${security.shellQuote(remotePath)}`)
             .then(() => resolve(true))
             .catch(reject);
@@ -492,9 +469,7 @@ class SSHService {
     });
   }
 
-  /**
-   * Real SFTP: Create directory
-   */
+  
   async createFolder(serverConfig, remotePath) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available');
@@ -507,9 +482,7 @@ class SSHService {
     });
   }
 
-  /**
-   * Real SFTP: Rename / Move item
-   */
+  
   async renameItem(serverConfig, oldPath, newPath) {
     const conn = await this.connect(serverConfig);
     if (!conn.sftp) throw new Error('SFTP subsystem not available');
@@ -522,9 +495,7 @@ class SSHService {
     });
   }
 
-  /**
-   * Disconnect server
-   */
+  
   disconnect(serverId) {
     const conn = this.connections.get(serverId);
     if (conn && conn.client) {

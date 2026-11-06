@@ -105,7 +105,7 @@ module.exports = function metricsRouter({ store, ssh, security, history, audit }
     }
   });
 
-  /** Everything the home dashboard needs in one round trip. */
+  
   router.get('/overview', async (req, res) => {
     const srv = store.getActiveServer();
     const [{ isReal, metrics }, pm2] = await Promise.all([

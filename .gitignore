@@ -1,4 +1,4 @@
-# Secrets & runtime state — never commit these
+
 .env
 config.json
 config.json.tmp

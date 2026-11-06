@@ -135,6 +135,6 @@ process.on('SIGTERM', shutdown);
 server.listen(PORT, HOST, () => {
   console.log(`ServerOps running on http://localhost:${PORT}`);
   if (!process.env.PANEL_TOKEN || process.env.PANEL_TOKEN.length < security.MIN_TOKEN_LENGTH) {
-    console.warn('⚠️  PANEL_TOKEN is not set: the API will refuse every request. Run "npm run setup".');
+    console.warn('️  PANEL_TOKEN is not set: the API will refuse every request. Run "npm run setup".');
   }
 });

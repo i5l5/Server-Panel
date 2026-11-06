@@ -53,9 +53,9 @@
     return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  // ------------------------------------------
-  // KPI tiles
-  // ------------------------------------------
+  
+  
+  
   function setKpi(kind, value, warn = 70, bad = 90) {
     const tile = document.querySelector(`.dash-kpi[data-kpi="${kind}"]`);
     const bar = $(`kpi${kind[0].toUpperCase()}${kind.slice(1)}Bar`);
@@ -64,7 +64,7 @@
     if (tile) tile.dataset.level = levelFor(n, warn, bad);
   }
 
-  /** Called by app.js on every metrics poll and WebSocket pulse. */
+  
   function onPulse(m) {
     if (!m) return;
     setKpi('cpu', m.cpu, 70, 90);
@@ -93,9 +93,9 @@
     );
   }
 
-  // ------------------------------------------
-  // Hero + fleet (from /api/overview)
-  // ------------------------------------------
+  
+  
+  
   function renderHero(data) {
     const srv = data.server || {};
     const pill = $('dashModePill');
@@ -136,9 +136,9 @@
     set('fleetAlerts', data.alertsEnabled ? 'Enabled' : 'Off', data.alertsEnabled);
   }
 
-  // ------------------------------------------
-  // Activity feed (audit log)
-  // ------------------------------------------
+  
+  
+  
   const ACTIVITY_LABELS = [
     [/^\/api\/servers\/select$/, 'Switched active server', 'repeat'],
     [/^\/api\/servers\/[^/]+$/, 'Removed a server', 'trash-2'],
@@ -214,9 +214,9 @@
     if (window.feather) feather.replace();
   }
 
-  // ------------------------------------------
-  // History chart
-  // ------------------------------------------
+  
+  
+  
   const PAD = { top: 10, right: 12, bottom: 24, left: 34 };
 
   function renderChart() {
@@ -257,7 +257,7 @@
     for (let i = 0; i < ticks; i++) {
       const t = t0 + (span * i) / (ticks - 1);
       const text = clockLabel(t);
-      if (text === previousLabel) continue; // short ranges would repeat the same minute
+      if (text === previousLabel) continue; 
       previousLabel = text;
       const label = svgEl('text', { x: x(t), y: height - 6, 'text-anchor': i === 0 ? 'start' : i === ticks - 1 ? 'end' : 'middle' });
       label.textContent = text;
@@ -269,7 +269,7 @@
     svg.appendChild(svgEl('path', { class: 'area-cpu', d: `${cpuLine}L${x(t1).toFixed(1)},${y(0)}L${x(t0).toFixed(1)},${y(0)}Z` }));
     for (const s of SERIES) svg.appendChild(svgEl('path', { class: `series ${s.key}`, d: pathFor(s.key) }));
 
-    // Hover cursor + tooltip
+    
     const cursor = svgEl('line', { class: 'cursor', y1: PAD.top, y2: PAD.top + plotH, visibility: 'hidden' });
     const dots = SERIES.map(s => svgEl('circle', { class: `dot ${s.key}`, r: 4, visibility: 'hidden' }));
     svg.append(cursor, ...dots);
@@ -326,9 +326,9 @@
     return `Avg CPU ${avg('cpu')}% · peak ${peak}% · avg memory ${avg('ram')}% · ${points.length} samples`;
   }
 
-  // ------------------------------------------
-  // Data loading
-  // ------------------------------------------
+  
+  
+  
   async function loadOverview() {
     try {
       const res = await fetch('/api/overview');
@@ -340,7 +340,7 @@
       renderFleet(data);
       onPulse(data.metrics);
       renderActivity(data.recentActivity);
-    } catch (_) { /* next poll retries */ }
+    } catch (_) {  }
   }
 
   async function loadHistory() {
@@ -356,7 +356,7 @@
       renderSpark('sparkRam', recent.map(p => p.ram));
       renderSpark('sparkDisk', recent.map(p => p.disk));
       renderSpark('sparkNet', recent.map(p => p.rx));
-    } catch (_) { /* next poll retries */ }
+    } catch (_) {  }
   }
 
   function setupControls() {
@@ -393,7 +393,7 @@
     return !document.hidden && view && view.classList.contains('active');
   }
 
-  /** Started by app.js once the panel token has been verified. */
+  
   function start() {
     if (dash.started) return;
     dash.started = true;
@@ -407,7 +407,7 @@
     });
   }
 
-  /** app.js calls this when the user navigates back to Home. */
+  
   function onShow() {
     if (!dash.started) return;
     loadOverview();

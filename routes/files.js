@@ -113,7 +113,7 @@ module.exports = function filesRouter({ store, ssh, security }) {
       if (!srv.isReal) return res.status(404).send('File not found or server offline');
 
       const readStream = await ssh.getReadStream(srv, fullPath);
-      // ASCII fallback + RFC 5987 form; both escaped so no header injection is possible.
+      
       res.setHeader('Content-Disposition',
         `attachment; filename="${safeName.replace(/[^\w.\- ]/g, '_')}"; filename*=UTF-8''${encodeURIComponent(safeName)}`);
       res.setHeader('Content-Type', 'application/octet-stream');

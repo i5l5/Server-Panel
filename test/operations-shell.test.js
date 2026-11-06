@@ -50,7 +50,7 @@ test('real Git deployment changes checkout, restarts PM2 and rolls back without 
   const app = `${posix(folder)}/app`;
   const bin = `${posix(folder)}/bin`;
   success(`mkdir -p ${q(origin)} ${q(bin)}\ngit -C ${q(origin)} init -b main\ngit -C ${q(origin)} config user.name Tester\ngit -C ${q(origin)} config user.email tester@example.invalid\nprintf v1 > ${q(`${origin}/version.txt`)}\ngit -C ${q(origin)} add .\ngit -C ${q(origin)} commit -m first`);
-  // PM2 is replaced by a tiny executable in this isolated local fixture.
+  
   const pm2 = path.join(folder, 'bin', 'pm2');
   fs.writeFileSync(pm2, `#!/bin/sh\nprintf '%s\\n' "$*" >> ${q(`${posix(folder)}/pm2.log`)}\n`, { mode: 0o755 });
   success(`chmod +x ${q(posix(pm2))}`);

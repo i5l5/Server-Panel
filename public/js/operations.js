@@ -308,7 +308,7 @@ window.OperationsUI = (() => {
         if (!githubStatus?.configured) { $('opsGitHubSetup').open = true; $('opsGitHubForm').elements.clientId.focus(); return; }
         control.disabled = true;
         const data = await api('/github/authorize', 'POST', {});
-        try { sessionStorage.setItem('controlLinx.githubServer', state.serverId); } catch (_) { /* selection can fall back after authorization */ }
+        try { sessionStorage.setItem('controlLinx.githubServer', state.serverId); } catch (_) {  }
         location.assign(data.url);
         return;
       }
@@ -373,7 +373,7 @@ window.OperationsUI = (() => {
       const callbackResult = new URL(location.href).searchParams.get('github');
       if (callbackResult) {
         let previous = '';
-        try { previous = sessionStorage.getItem('controlLinx.githubServer'); sessionStorage.removeItem('controlLinx.githubServer'); } catch (_) { /* storage may be disabled */ }
+        try { previous = sessionStorage.getItem('controlLinx.githubServer'); sessionStorage.removeItem('controlLinx.githubServer'); } catch (_) {  }
         if (state.servers.some(server => server.id === previous)) state.serverId = previous;
         const url = new URL(location.href); url.searchParams.delete('github');
         window.history.replaceState(null, '', url.pathname + url.search + url.hash);

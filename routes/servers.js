@@ -82,7 +82,7 @@ module.exports = function serversRouter({ store, ssh, security, history, operati
     const srv = store.getVisibleServers().find(s => s.id === id);
     if (!srv) return res.status(404).json({ success: false, error: 'Server not found' });
 
-    // Selection belongs to this browser tab (X-Server-Id), never to other users.
+    
 
     if (srv.isReal) {
       try {

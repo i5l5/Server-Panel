@@ -11,7 +11,7 @@ module.exports = function operationsRouter({ operations, store, security, github
   const permit = permission => (req, res, next) => can(req.panelUser, permission) ? next() : res.status(403).json({ success: false, error: `Missing ${permission} permission` });
   router.get('/operations', wrap((req, res, id) => {
     const data = operations.list(id);
-    // Logs and database connection details are visible only to operational accounts.
+    
     if (req.panelRole === 'viewer') {
       data.runs = data.runs.map(({ log, plan, archive, ...run }) => run);
       data.plans = data.plans.map(({ credentialsFile, ...plan }) => plan);
