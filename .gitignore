@@ -1,0 +1,12 @@
+
+.env
+config.json
+config.json.tmp
+servers_data.json
+data/
+*.zip
+
+node_modules/
+npm-debug.log*
+.DS_Store
+Thumbs.db

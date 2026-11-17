@@ -1,0 +1,8 @@
+services:
+  app:
+    image: 'ghcr.io/i5l5/server-panel:latest'
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./data:/app/data
